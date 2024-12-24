@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Deal or No Deal</title>
+    <style>
+      html {
+        height: 100%;
+      }
+
+      body {
+        background-image: url("assets/background.png");
+        background-repeat: no-repeat;
+        background-size: cover;
+      }
+
+      .logo {
+        display: flex;
+        justify-content: center;
+        margin-top: 50px;
+      }
+
+      #logo {
+        cursor: pointer;
+      }
+
+      #side {
+        width: 20%;
+        height: 80vh;
+      }
+
+      #briefcases-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 50px;
+        justify-content: center;
+        align-items: center;
+        width: 90%;
+      }
+
+      .briefcase {
+        height: 120px;
+        width: 120px;
+        position: relative;
+      }
+
+      .briefcase-text {
+        position: absolute;
+        top: 50px;
+        font-weight: bold;
+        font-size: 30px;
+        cursor: pointer;
+        animation-name: anim;
+        animation-duration: 4s;
+      }
+
+      .content {
+        display: flex;
+      }
+
+      .prize {
+        background-color: black;
+        color: gold;
+        padding-top: 3px;
+        padding-bottom: 3px;
+        margin-bottom: 5px;
+        text-align: center;
+        cursor: pointer;
+      }
+
+      .prize:hover {
+        background-color: gray;
+      }
+
+      .briefcase-img:hover {
+        cursor: pointer;
+      }
+
+      @keyframes anim {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .briefcase-img {
+        animation-name: anim;
+        animation-duration: 4s;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <div class="logo">
+        <img id="logo" src="assets/logo.png" height="100" />
+      </div>
+      <div class="content">
+        <div id="briefcases-container"></div>
+        <div id="side"></div>
+      </div>
+    </div>
+    <script>
+      const audio = new Audio("assets/wow.mp3");
+      const music = new Audio("assets/music.mp3");
+      const banker_theme = new Audio("assets/banker_theme.mp3");
+
+      document.getElementById("logo").onclick = () => {
+        if (window.event.ctrlKey) {
+          if (banker_theme.paused) {
+            banker_theme.play();
+          } else {
+            banker_theme.pause();
+            banker_theme.currentTime = 0;
+          }
+        } else {
+          if (music.paused) {
+            music.play();
+          } else {
+            music.pause();
+            music.currentTime = 0;
+          }
+        }
+      };
+
+      const CASE_SIZE = 120;
+      let selectedBriefCase = -1;
+      const briefcasesContainerElement = document.getElementById(
+        "briefcases-container"
+      );
+      const sideElement = document.getElementById("side");
+      const prizes = [
+        1, 2, 5, 10, 20, 30, 50, 80, 100, 125, 150, 200, 250, 300, 350, 400,
+        450, 500, 600, 700, 750, 800, 900, 1000, 1200, 2000,
+      ];
+
+      const handleClick = (briefcaseImage, briefcaseText) => () => {
+        const briefcaseTextValue = parseInt(briefcaseText.innerText);
+
+        if (briefcaseImage.style.visibility === "hidden") {
+          return;
+        }
+
+        if (window.event.ctrlKey) {
+          if (selectedBriefCase === -1) {
+            selectedBriefCase = briefcaseTextValue;
+            briefcaseText.style.color = "red";
+          } else {
+            selectedBriefCase = -1;
+            briefcaseText.style.color = "black";
+          }
+          return;
+        }
+
+        if (selectedBriefCase === briefcaseTextValue) {
+          return;
+        }
+
+        const prize = prizes[briefcaseTextValue - 1];
+        briefcaseImage.style.visibility = "hidden";
+        briefcaseText.innerText = prize;
+        briefcaseText.style.color = "white";
+
+        for (const child of sideElement.children) {
+          if (parseInt(child.innerText) === prize) {
+            sideElement.removeChild(child);
+            break;
+          }
+        }
+
+        audio.play();
+      };
+
+      for (let i = 0; i < prizes.length; i++) {
+        const briefcase = document.createElement("div");
+        const briefcaseText = document.createElement("span");
+        const briefcaseImage = document.createElement("img");
+        briefcase.className = "briefcase";
+        briefcaseText.className = "briefcase-text";
+        briefcaseImage.className = "briefcase-img";
+
+        briefcase.appendChild(briefcaseText);
+        briefcase.appendChild(briefcaseImage);
+
+        if (i + 1 <= 9) {
+          briefcaseText.style.left = "50px";
+        } else {
+          briefcaseText.style.left = "45px";
+        }
+
+        briefcaseText.innerText = `${i + 1}`;
+        briefcaseImage.height = CASE_SIZE;
+        briefcaseImage.width = CASE_SIZE;
+        briefcaseImage.src = "assets/briefcase.png";
+        briefcaseImage.id = `briefcase-${i + 1}`;
+        briefcaseImage.onclick = handleClick(briefcaseImage, briefcaseText);
+        briefcaseText.onclick = handleClick(briefcaseImage, briefcaseText);
+        briefcasesContainerElement.appendChild(briefcase);
+
+        const prizeElement = document.createElement("div");
+        prizeElement.className = "prize";
+        prizeElement.innerText = prizes[i];
+        sideElement.appendChild(prizeElement);
+      }
+
+      for (let i = 0; i < prizes.length; i++) {
+        const idx = Math.floor(Math.random() * prizes.length);
+        const tmp = prizes[i];
+        prizes[i] = prizes[idx];
+        prizes[idx] = tmp;
+      }
+    </script>
+  </body>
+</html>
